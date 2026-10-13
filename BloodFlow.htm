@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heart Blood Flow Sequence</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    padding:15px;
+    background:#f2f2f2;
+}
+
+h1{
+    text-align:center;
+    color:#0d5e3d;
+}
+
+.instructions{
+    background:white;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:15px;
+    box-shadow:0 2px 5px rgba(0,0,0,.2);
+}
+
+.container{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.bank{
+    background:white;
+    border-radius:10px;
+    padding:10px;
+    min-height:120px;
+    box-shadow:0 2px 5px rgba(0,0,0,.2);
+}
+
+.sequence{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+}
+
+.slot{
+    background:white;
+    border:2px dashed #999;
+    border-radius:10px;
+    padding:10px;
+    min-height:50px;
+    display:flex;
+    align-items:center;
+}
+
+.card{
+    background:#0d5e3d;
+    color:white;
+    padding:10px;
+    margin:5px;
+    border-radius:8px;
+    cursor:grab;
+    touch-action:none;
+}
+
+.correct{
+    background:#2e7d32 !important;
+}
+
+.incorrect{
+    background:#c62828 !important;
+}
+
+.controls{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+button{
+    flex:1;
+    padding:12px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    color:white;
+}
+
+.check{
+    background:#1976d2;
+}
+
+.reset{
+    background:#666;
+}
+
+#score{
+    margin-top:15px;
+    font-size:1.1rem;
+    font-weight:bold;
+    text-align:center;
+}
+
+@media(min-width:768px){
+    .sequence{
+        grid-template-columns:1fr 1fr;
+    }
+}
+</style>
+</head>
+<body>
+
+<h1>Heart Blood Flow Sequence</h1>
+
+<div class="instructions">
+Arrange the structures in the correct order of blood flow through the heart and great vessels.
+</div>
+
+<div class="container">
+
+<div id="bank" class="bank"></div>
+
+<div id="sequence" class="sequence"></div>
+
+</div>
+
+<div class="controls">
+<button class="check" onclick="checkAnswers()">Check Answer</button>
+<button class="reset" onclick="location.reload()">Reset</button>
+</div>
+
+<div id="score"></div>
+
+<script>
+
+const correctOrder = [
+"Brachiocephalic veins",
+"Superior vena cava",
+"Right atrium",
+"Tricuspid valve",
+"Right ventricle",
+"Pulmonary valve",
+"Pulmonary trunk",
+"Pulmonary arteries",
+"Pulmonary veins",
+"Left atrium",
+"Bicuspid valve",
+"Left ventricle",
+"Aortic valve",
+"Ascending aorta",
+"Aortic arch",
+"Brachiocephalic trunk"
+];
+
+const shuffled = [...correctOrder]
+.sort(() => Math.random()-0.5);
+
+const bank = document.getElementById("bank");
+const sequence = document.getElementById("sequence");
+
+for(let i=0;i<16;i++){
+
+    const slot=document.createElement("div");
+    slot.className="slot";
+    slot.dataset.position=i;
+
+    slot.innerHTML=`<strong>${i+1}.</strong>&nbsp;`;
+
+    slot.addEventListener("dragover",e=>e.preventDefault());
+
+    slot.addEventListener("drop",e=>{
+        e.preventDefault();
+        const id=e.dataTransfer.getData("text");
+        const card=document.getElementById(id);
+
+        if(slot.querySelector(".card")){
+            bank.appendChild(slot.querySelector(".card"));
+        }
+
+        slot.appendChild(card);
+    });
+
+    sequence.appendChild(slot);
+}
+
+shuffled.forEach((item,index)=>{
+
+    const card=document.createElement("div");
+    card.className="card";
+    card.id="card"+index;
+    card.draggable=true;
+    card.textContent=item;
+
+    card.addEventListener("dragstart",e=>{
+        e.dataTransfer.setData("text",card.id);
+    });
+
+    bank.appendChild(card);
+});
+
+function checkAnswers(){
+
+    let score=0;
+
+    document.querySelectorAll(".slot").forEach((slot,index)=>{
+
+        const card=slot.querySelector(".card");
+
+        if(!card) return;
+
+        card.classList.remove("correct","incorrect");
+
+        if(card.textContent===correctOrder[index]){
+            card.classList.add("correct");
+            score++;
+        }else{
+            card.classList.add("incorrect");
+        }
+    });
+
+    document.getElementById("score").innerHTML =
+      `Score: ${score}/16 (${Math.round(score/16*100)}%)`;
+}
+</script>
+
+</body>
+</html>
